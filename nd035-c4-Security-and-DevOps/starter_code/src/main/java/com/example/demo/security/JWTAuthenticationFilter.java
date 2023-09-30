@@ -3,6 +3,7 @@ package com.example.demo.security;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.example.demo.model.persistence.User;
+import com.example.demo.model.requests.CreateUserRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,7 +30,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try{
-            User authenticationUser = new ObjectMapper().readValue(request.getInputStream(), User.class);
+            CreateUserRequest authenticationUser = new ObjectMapper().readValue(request.getInputStream(), CreateUserRequest.class);
 
             return authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(

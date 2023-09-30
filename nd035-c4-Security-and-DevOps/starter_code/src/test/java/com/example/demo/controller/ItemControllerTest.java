@@ -22,7 +22,7 @@ import java.util.Objects;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+@RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureJsonTesters
@@ -45,13 +45,18 @@ public class ItemControllerTest {
         user.setPassword("password1234");
         user.setConfirmPassword("password1234");
 
-        User result = userRepository.findByUsername(user.getUsername());
-        String endpoint = Objects.isNull(result) ? "create" : "login";
+        if(userRepository.findByUsername("thang") == null){
+            mvc.perform(
+                    post("/api/user/create")
+                            .content(mapper.writeValueAsString(user))
+                            .contentType(MediaType.APPLICATION_JSON_UTF8))
+            .andReturn();
+        }
         MvcResult response = mvc.perform(
-                        post("/api/user/".concat(endpoint))
-                                .content(mapper.writeValueAsString(user))
-                                .contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andReturn();
+                post("/login")
+                        .content(mapper.writeValueAsString(user))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andReturn();
         httpHeaders.set(HttpHeaders.AUTHORIZATION, response.getResponse().getHeader("Authorization"));
     }
 

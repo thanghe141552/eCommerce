@@ -22,13 +22,13 @@ import java.util.Objects;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+@RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureJsonTesters
 public class CartControllerTest {
     @Autowired
-    private MockMvc mockMvc;
+    private MockMvc mvc;
 
     @Autowired
     private ObjectMapper mapper;
@@ -45,39 +45,102 @@ public class CartControllerTest {
         user.setPassword("password1234");
         user.setConfirmPassword("password1234");
 
-        User result = userRepository.findByUsername(user.getUsername());
-        String endpoint = Objects.isNull(result) ? "create" : "login";
-        MvcResult response = mockMvc.perform(
-                        post("/api/user/".concat(endpoint))
-                                .content(mapper.writeValueAsString(user))
-                                .contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andReturn();
+        if(userRepository.findByUsername("thang") == null){
+            mvc.perform(
+                post("/api/user/create")
+                        .content(mapper.writeValueAsString(user))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andReturn();
+        }
+        MvcResult response = mvc.perform(
+                post("/login")
+                        .content(mapper.writeValueAsString(user))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andReturn();
         httpHeaders.set(HttpHeaders.AUTHORIZATION, response.getResponse().getHeader("Authorization"));
     }
 
     @Test
     public void addToCart() throws Exception {
         ModifyCartRequest body = new ModifyCartRequest();
+        body.setUsername("thang");
         body.setItemId(1);
         body.setQuantity(2);
-        mockMvc.perform(
-                        post("/api/cart/addToCart")
-                                .headers(httpHeaders)
-                                .content(mapper.writeValueAsString(body))
-                                .contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(status().isOk());
+        mvc.perform(
+                post("/api/cart/addToCart")
+                        .headers(httpHeaders)
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    public void addToCartFailed1() throws Exception {
+        ModifyCartRequest body = new ModifyCartRequest();
+        body.setUsername("invalidUser");
+        body.setItemId(1);
+        body.setQuantity(2);
+        mvc.perform(
+                post("/api/cart/addToCart")
+                        .headers(httpHeaders)
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void addToCartFailed2() throws Exception {
+        ModifyCartRequest body = new ModifyCartRequest();
+        body.setUsername("thang");
+        body.setItemId(3);
+        body.setQuantity(5);
+        mvc.perform(
+                post("/api/cart/addToCart")
+                        .headers(httpHeaders)
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(status().isNotFound());
     }
 
     @Test
     public void removeFromCart() throws Exception {
         ModifyCartRequest body = new ModifyCartRequest();
+        body.setUsername("thang");
         body.setItemId(1);
         body.setQuantity(1);
-        mockMvc.perform(
-                        post("/api/cart/removeFromCart")
-                                .headers(httpHeaders)
-                                .content(mapper.writeValueAsString(body))
-                                .contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(status().isOk());
+        mvc.perform(
+                post("/api/cart/removeFromCart")
+                        .headers(httpHeaders)
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    public void removeFromCartFailed1() throws Exception {
+        ModifyCartRequest body = new ModifyCartRequest();
+        body.setUsername("invalidUser");
+        body.setItemId(1);
+        body.setQuantity(1);
+        mvc.perform(
+                post("/api/cart/removeFromCart")
+                        .headers(httpHeaders)
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void removeFromCartFailed2() throws Exception {
+        ModifyCartRequest body = new ModifyCartRequest();
+        body.setUsername("thang");
+        body.setItemId(3);
+        body.setQuantity(5);
+        mvc.perform(
+                post("/api/cart/removeFromCart")
+                        .headers(httpHeaders)
+                        .content(mapper.writeValueAsString(body))
+                        .contentType(MediaType.APPLICATION_JSON_UTF8))
+        .andExpect(status().isNotFound());
     }
 }

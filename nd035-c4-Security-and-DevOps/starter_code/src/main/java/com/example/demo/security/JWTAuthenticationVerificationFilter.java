@@ -29,7 +29,7 @@ public class JWTAuthenticationVerificationFilter extends BasicAuthenticationFilt
                     .verify(token.replace(SecurityConstant.TOKEN_PREFIX, ""))
                     .getSubject();
             if (user != null) {
-                return new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
+                return new UsernamePasswordAuthenticationToken(user, "user", new ArrayList<>());
             }
             return null;
         }

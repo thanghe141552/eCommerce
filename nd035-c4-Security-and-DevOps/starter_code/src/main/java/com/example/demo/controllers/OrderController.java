@@ -5,6 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,7 +37,8 @@ public class OrderController {
 	public ResponseEntity<UserOrder> submit(@PathVariable String username) {
 		User user = userRepository.findByUsername(username);
 		if(user == null) {
-			return ResponseEntity.notFound().build();
+			log.info("Submit order for user failed with: {}", username);
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 		}
 		UserOrder order = UserOrder.createFromCart(user.getCart());
 		orderRepository.save(order);
@@ -50,10 +52,11 @@ public class OrderController {
 	public ResponseEntity<List<UserOrder>> getOrdersForUser(@PathVariable String username) {
 		User user = userRepository.findByUsername(username);
 		if(user == null) {
-			return ResponseEntity.notFound().build();
+			log.info("Show history order for user failed with: {}", username);
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
 		}
 		//Log
-		log.info("Show history for user: {}", username);
+		log.info("Show history order for user: {}", username);
 
 		return ResponseEntity.ok(orderRepository.findByUser(user));
 	}
